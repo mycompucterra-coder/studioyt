@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>YouTube Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<style>
+  :root {
+    --bg-color: #f9f9f9; --text-main: #0f0f0f; --text-secondary: #606060;
+    --border-color: #e5e5e5; --yt-red: #ff0000; --card-bg: #ffffff; --green: #2ba640; --blue: #065fd4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, "Roboto", "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); padding-bottom: 70px; font-size: 14px; -webkit-font-smoothing: antialiased; }
+  
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; font-size: 24px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+  .fill-icon { font-variation-settings: 'FILL' 1; }
+
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--card-bg); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #f0f0f0; }
+  .logo-area { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 18px; font-family: "Roboto", sans-serif; letter-spacing: -0.5px;}
+  .yt-icon { width: 28px; height: 20px; background: var(--yt-red); border-radius: 5px; position: relative; display: inline-block; }
+  .yt-icon::after { content: ""; position: absolute; left: 11px; top: 6px; border-left: 6px solid #fff; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+
+  .header-actions { display: flex; align-items: center; gap: 20px; color: var(--text-main); }
+  .icon-btn { cursor: pointer; position: relative; transition: transform 0.15s ease; color: var(--text-main); display: flex; align-items: center; }
+  .icon-btn:active { transform: scale(0.9); }
+  .icon-btn.bell::after { content: ""; position: absolute; top: 0; right: 0; width: 8px; height: 8px; background: var(--yt-red); border-radius: 50%; border: 1.5px solid #fff; animation: popIn 0.3s ease; }
+  .header-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6a1b9a, #ff4081); cursor: pointer; transition: transform 0.15s ease; overflow: hidden; }
+  .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .header-avatar:active { transform: scale(0.9); }
+
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; animation: fadeInUp 0.3s ease forwards; }
+
+  .card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #f0f0f0; }
+  
+  .profile-card { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; animation: fadeInUp 0.4s ease; }
+  .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #6a1b9a, #ff4081); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 28px; font-weight: bold; box-shadow: 0 4px 10px rgba(106,27,154,0.3); overflow: hidden; }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-info h2 { font-size: 22px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+  .profile-info .subs { font-size: 22px; font-weight: 500; margin-bottom: 2px; }
+  .profile-info .subs-label { font-size: 13px; color: var(--text-secondary); }
+  .verified-badge { color: #606060; font-size: 18px; display: inline-flex; align-items: center; }
+
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 10px; }
+  .section-header h3 { font-size: 16px; font-weight: 600; }
+  .section-header .time { font-size: 13px; color: var(--text-secondary); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat-box { background: var(--card-bg); border: 1px solid #f0f0f0; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.15s ease; animation: fadeInUp 0.4s ease; }
+  .stat-box:active { background: #f0f0f0; transform: scale(0.97); }
+  .stat-box .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat-box .value { font-size: 22px; font-weight: 600; }
+  .stat-box .value.money { color: var(--green); }
+
+  .comment-block { border-top: 1px solid #f0f0f0; padding-top: 12px; }
+  .comment { display: flex; gap: 10px; margin-bottom: 16px; animation: fadeInUp 0.4s ease; }
+  .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ccc; flex-shrink: 0; overflow: hidden; }
+  .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .comment-content { flex: 1; }
+  .comment-user { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+  .comment-text { font-size: 14px; line-height: 1.4; }
+  .comment-actions { display: flex; gap: 20px; margin-top: 8px; color: var(--text-secondary); font-size: 15px; cursor: pointer; align-items: center; }
+  .comment-actions .material-symbols-outlined { font-size: 18px; }
+  .comment-actions span { transition: transform 0.1s ease; display: inline-flex; align-items: center; gap: 4px; }
+  .comment-actions span:active { transform: scale(1.2); }
+  .liked { color: var(--blue) !important; }
+
+  .filter-bar { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .chip { background: #f0f0f0; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; }
+  .chip:active { background: #e0e0e0; }
+  .chip .material-symbols-outlined { font-size: 18px; }
+  
+  .video-item { display: flex; gap: 12px; margin-bottom: 16px; cursor: pointer; transition: opacity 0.15s ease; animation: fadeInUp 0.4s ease; }
+  .video-item:active { opacity: 0.7; }
+  .v-thumb { width: 130px; height: 73px; border-radius: 8px; position: relative; flex-shrink: 0; overflow: hidden; background: #e0e0e0; }
+  .v-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .v-duration { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 11px; padding: 1px 4px; border-radius: 4px; font-weight: 500; }
+  .v-info { flex: 1; min-width: 0; }
+  .v-title { font-size: 14px; font-weight: 500; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .v-stats { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .v-actions { display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary); align-items: center;}
+  .v-actions .material-symbols-outlined { font-size: 16px; }
+  .v-actions span { display: inline-flex; align-items: center; gap: 4px; }
+
+  .analytics-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; padding-bottom: 10px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .analytics-carousel::-webkit-scrollbar { display: none; }
+  .analytics-card { flex: 0 0 85%; scroll-snap-align: center; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; }
+  
+  .chart-title { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
+  .chart-value { font-size: 24px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .badge-down { font-size: 12px; background: #f5f5f5; color: #606060; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px; }
+  .badge-down .material-symbols-outlined { font-size: 14px; }
+  .chart-container { position: relative; height: 100px; border-bottom: 1px solid #eee; border-left: 1px solid #eee; margin-bottom: 8px; }
+  .chart-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); }
+
+  .carousel-dots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 24px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #e0e0e0; transition: 0.3s ease; }
+  .dot.active { background: #606060; }
+
+  .top-content-item { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; cursor: pointer; }
+  .top-content-thumb { width: 40px; height: 24px; border-radius: 4px; flex-shrink: 0; background: #ddd; overflow: hidden; }
+  .top-content-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .top-content-title { flex: 1; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-content-views { font-size: 14px; font-weight: 500; }
+
+  .monetization-header { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0 10px; text-align: center; }
+  .monetization-icon { width: 64px; height: 64px; background: #e8f5e9; color: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(43,166,64,0.2); }
+  .monetization-icon .material-symbols-outlined { font-size: 32px; }
+  .monetization-header h2 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .monetization-header p { color: var(--text-secondary); font-size: 13px; }
+
+  .bar-chart { display: flex; align-items: flex-end; justify-content: space-between; height: 120px; margin-top: 20px; gap: 6px; }
+  .bar-col { flex: 1; background: var(--green); border-radius: 4px 4px 0 0; opacity: 0.6; transition: all 0.3s ease; cursor: pointer; transform-origin: bottom; }
+  .bar-col.active { opacity: 1; background: #1b5e20; transform: scaleY(1.05); }
+  .bar-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-secondary); }
+
+  .money-big { font-size: 38px; font-weight: 700; color: var(--text-main); margin: 8px 0; }
+  .money-label { font-size: 14px; color: var(--text-secondary); }
+
+  .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row span:last-child { font-weight: 600; }
+
+  .post-card { background: var(--card-bg); border: 1px solid #f0f0f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; animation: slideUpFade 0.4s ease; }
+  .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .post-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6a1b9a, #ff4081); overflow: hidden; }
+  .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .post-meta h4 { font-size: 14px; font-weight: 500; }
+  .post-meta p { font-size: 12px; color: var(--text-secondary); }
+  .post-content { font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+  .post-image { width: 100%; height: 160px; border-radius: 8px; background: linear-gradient(135deg, #a1c4fd, #c2e9fb); margin-bottom: 12px; overflow: hidden; }
+  .post-image img { width: 100%; height: 100%; object-fit: cover; }
+  .post-actions { display: flex; justify-content: space-between; border-top: 1px solid #f5f5f5; padding-top: 10px; color: var(--text-secondary); font-size: 14px; }
+  .post-actions span { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .post-actions .material-symbols-outlined { font-size: 18px; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); display: flex; justify-content: space-around; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); z-index: 10; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; }
+  .nav-item.active { color: var(--text-main); }
+  .nav-item:active { transform: scale(0.9); }
+  .nav-icon { font-size: 24px; }
+
+  /* Заглушка для картинок, если их нет */
+  .img-placeholder {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    background: #e0e0e0; color: #909090; font-size: 24px;
+  }
+  .img-placeholder .material-symbols-outlined { font-size: 28px; }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-area"><span class="yt-icon"></span> Studio</div>
+    <div class="header-actions">
+      <span class="icon-btn" onclick="alert('Создание нового видео...')"><span class="material-symbols-outlined">add_circle</span></span>
+      <span class="icon-btn bell" onclick="alert('У вас 15 новых уведомлений!')"><span class="material-symbols-outlined">notifications</span></span>
+      <div class="header-avatar" onclick="switchTab('home', this)">
+        <img src="img/avatar.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="avatar">
+      </div>
+    </div>
+  </div>
+
+  <!-- ГЛАВНАЯ -->
+  <div id="home" class="page active">
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <img src="img/avatar.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="avatar">
+      </div>
+      <div class="profile-info">
+        <h2>VoltixRB</h2>
+        <div class="subs">120 тыс.</div>
+        <div class="subs-label">Число подписчиков</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h3>Аналитика по каналу</h3>
+      <span class="time">Последние 28 дней</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="stat-box" onclick="alert('Просмотры: 854 200\n+15% к прошлому месяцу')">
+        <div class="label">Просмотры</div>
+        <div class="value">854 200</div>
+      </div>
+      <div class="stat-box" onclick="alert('Время просмотра: 45 300 часов')">
+        <div class="label">Время просмотра (ч)</div>
+        <div class="value">45 300</div>
+      </div>
+      <div class="stat-box" onclick="alert('Примерный доход: $1 245.50\nМонетизация активна!')">
+        <div class="label">Доход (оценка)</div>
+        <div class="value money">$1 245.50</div>
+      </div>
+      <div class="stat-box" onclick="alert('Новые подписчики: +12 450')">
+        <div class="label">Подписчики (+)</div>
+        <div class="value" style="color:var(--green)">+12 450</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h3>Последние комментарии</h3>
+    </div>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px; cursor: pointer;" onclick="alert('Переход к видео: Я КУПИЛ САМЫЙ ДОРОГОЙ ДОМ...')">
+        <h4 style="font-size: 14px; font-weight: 500; line-height: 1.3;">Я КУПИЛ САМЫЙ ДОРОГОЙ ДОМ В ROBLOX ЗА 500000 РУБЛЕЙ!</h4>
+        <div style="width: 60px; height: 34px; border-radius: 4px; flex-shrink: 0; margin-left: 10px; overflow: hidden;">
+          <img src="img/comment_thumb.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>image</span></div>';" style="width:100%; height:100%; object-fit:cover;" alt="thumb">
+        </div>
+      </div>
+      
+      <div class="comment">
+        <div class="comment-avatar"><img src="img/user1.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="u1"></div>
+        <div class="comment-content">
+          <div class="comment-user">@Артур-к3у4з • 1 час назад</div>
+          <div class="comment-text">Это просто имба, как ты это сделал?! 🔥</div>
+          <div class="comment-actions">
+            <span onclick="toggleLike(this)"><span class="material-symbols-outlined">thumb_up</span> 850</span> 
+            <span onclick="alert('Ответ на комментарий...')"><span class="material-symbols-outlined">chat_bubble</span></span> 
+            <span onclick="toggleHeart(this)"><span class="material-symbols-outlined">favorite</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-avatar"><img src="img/user2.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="u2"></div>
+        <div class="comment-content">
+          <div class="comment-user">@Arseny_Pavlov • 3 часа назад</div>
+          <div class="comment-text">Красавчик, жду продолжение про админку! 👀</div>
+          <div class="comment-actions">
+            <span onclick="toggleLike(this)"><span class="material-symbols-outlined">thumb_up</span> 420</span> 
+            <span onclick="alert('Ответ на комментарий...')"><span class="material-symbols-outlined">chat_bubble</span></span> 
+            <span onclick="toggleHeart(this)"><span class="material-symbols-outlined">favorite</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-avatar"><img src="img/user3.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="u3"></div>
+        <div class="comment-content">
+          <div class="comment-user">@АмирБайказак-з1ы • 5 часов назад</div>
+          <div class="comment-text">Монетизация работает, поздравляю! 🤑</div>
+          <div class="comment-actions">
+            <span onclick="toggleLike(this)"><span class="material-symbols-outlined">thumb_up</span> 240</span> 
+            <span onclick="alert('Ответ на комментарий...')"><span class="material-symbols-outlined">chat_bubble</span></span> 
+            <span onclick="toggleHeart(this)"><span class="material-symbols-outlined">favorite</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-avatar"><img src="img/user4.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="u4"></div>
+        <div class="comment-content">
+          <div class="comment-user">@RobloxMaster • 8 часов назад</div>
+          <div class="comment-text">Это лучший канал по роблоксу! 💯</div>
+          <div class="comment-actions">
+            <span onclick="toggleLike(this)"><span class="material-symbols-outlined">thumb_up</span> 1,1 тыс.</span> 
+            <span onclick="alert('Ответ на комментарий...')"><span class="material-symbols-outlined">chat_bubble</span></span> 
+            <span onclick="toggleHeart(this)"><span class="material-symbols-outlined">favorite</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-avatar"><img src="img/user5.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="u5"></div>
+        <div class="comment-content">
+          <div class="comment-user">@MegaGamer • 12 часов назад</div>
+          <div class="comment-text">Дом просто топ, хочу такой же! 🏠</div>
+          <div class="comment-actions">
+            <span onclick="toggleLike(this)"><span class="material-symbols-outlined">thumb_up</span> 560</span> 
+            <span onclick="alert('Ответ на комментарий...')"><span class="material-symbols-outlined">chat_bubble</span></span> 
+            <span onclick="toggleHeart(this)"><span class="material-symbols-outlined">favorite</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-avatar"><img src="img/user6.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="u6"></div>
+        <div class="comment-content">
+          <div class="comment-user">@ProPlayer_99 • 1 день назад</div>
+          <div class="comment-text">Ждем новый видос, бро! 🔥🔥🔥</div>
+          <div class="comment-actions">
+            <span onclick="toggleLike(this)"><span class="material-symbols-outlined">thumb_up</span> 390</span> 
+            <span onclick="alert('Ответ на комментарий...')"><span class="material-symbols-outlined">chat_bubble</span></span> 
+            <span onclick="toggleHeart(this)"><span class="material-symbols-outlined">favorite</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- КОНТЕНТ -->
+  <div id="content" class="page">
+    <div class="filter-bar">
+      <div class="chip" onclick="alert('Настройки фильтра')"><span class="material-symbols-outlined">tune</span></div>
+      <div class="chip" onclick="alert('Сортировка по просмотрам')">Упорядочить <span class="material-symbols-outlined">expand_more</span></div>
+      <div class="chip" onclick="alert('Настройки доступа')">Доступ <span class="material-symbols-outlined">expand_more</span></div>
+    </div>
+
+    <!-- ВИДЕО 1 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nЯ КУПИЛ САМЫЙ ДОРОГОЙ ДОМ В ROBLOX...')">
+      <div class="v-thumb"><img src="img/video1.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v1"><div class="v-duration">12:45</div></div>
+      <div class="v-info">
+        <div class="v-title">Я КУПИЛ САМЫЙ ДОРОГОЙ ДОМ В ROBLOX ЗА 500000 РУБЛЕЙ!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 145 тыс. • 2 дня назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 8,4 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 420</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 2 -->
+    <div class="video-item" onclick="alert('Открытие видео:\n24 ЧАСА В СЕКРЕТНОЙ БАЗЕ АДМИНА...')">
+      <div class="v-thumb"><img src="img/video2.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v2"><div class="v-duration">08:30</div></div>
+      <div class="v-info">
+        <div class="v-title">24 ЧАСА В СЕКРЕТНОЙ БАЗЕ АДМИНА В ROBLOX!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 89 тыс. • 5 дней назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 4,5 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 210</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 3 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nНИКОГДА НЕ ЗАХОДИ В ЭТОТ РЕЖИМ...')">
+      <div class="v-thumb"><img src="img/video3.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v3"><div class="v-duration">15:20</div></div>
+      <div class="v-info">
+        <div class="v-title">НИКОГДА НЕ ЗАХОДИ В ЭТОТ РЕЖИМ В ROBLOX! (Страшно)</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 240 тыс. • 1 неделя назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 12 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 850</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 4 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nМистер Бист подарил мне 10000 РОБУКСОВ...')">
+      <div class="v-thumb"><img src="img/video4.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v4"><div class="v-duration">10:15</div></div>
+      <div class="v-info">
+        <div class="v-title">Мистер Бист подарил мне 10000 РОБУКСОВ В ROBLOX!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 310 тыс. • 2 недели назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 21 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 1,2 тыс.</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 5 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nПОСТРОИЛ БАЗУ МЕЧТЫ В ROBLOX...')">
+      <div class="v-thumb"><img src="img/video5.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v5"><div class="v-duration">18:22</div></div>
+      <div class="v-info">
+        <div class="v-title">ПОСТРОИЛ БАЗУ МЕЧТЫ В ROBLOX ЗА 1 000 000 РОБУКСОВ!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 180 тыс. • 1 месяц назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 9,5 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 540</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 6 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nПРЫЖОК С ГОРЫ... ИЛИ УДАЛЕНИЕ АККАУНТА?!')">
+      <div class="v-thumb"><img src="img/video6.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v6"><div class="v-duration">05:40</div></div>
+      <div class="v-info">
+        <div class="v-title">ПРЫЖОК С ГОРЫ... ИЛИ УДАЛЕНИЕ АККАУНТА?! (Жёстко)</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 75 тыс. • 3 недели назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 3,8 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 180</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 7 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nЯ СТАЛ АДМИНОМ В ROBLOX...')">
+      <div class="v-thumb"><img src="img/video7.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v7"><div class="v-duration">14:10</div></div>
+      <div class="v-info">
+        <div class="v-title">Я СТАЛ АДМИНОМ В САМОМ СТРАШНОМ СЕРВЕРЕ ROBLOX!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 450 тыс. • 1 месяц назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 32 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 1,8 тыс.</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 8 -->
+    <div class="video-item" onclick="alert('Открытие видео:\n24 ЧАСА В ХОРРОР ИГРЕ...')">
+      <div class="v-thumb"><img src="img/video8.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v8"><div class="v-duration">21:05</div></div>
+      <div class="v-info">
+        <div class="v-title">24 ЧАСА В ХОРРОР ИГРЕ В ROBLOX! (Я НЕ СПАЛ)</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 110 тыс. • 1 месяц назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 6,7 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 320</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 9 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nКТО ПОСТРОИТ ЛУЧШИЙ ДОМ...')">
+      <div class="v-thumb"><img src="img/video9.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v9"><div class="v-duration">11:32</div></div>
+      <div class="v-info">
+        <div class="v-title">КТО ПОСТРОИТ ЛУЧШИЙ ДОМ ЗА 10 МИНУТ ЧЕЛЛЕНДЖ!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 62 тыс. • 1 месяц назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 2,9 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 120</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 10 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nТРОЛЛИНГ В ROBLOX...')">
+      <div class="v-thumb"><img src="img/video10.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v10"><div class="v-duration">07:55</div></div>
+      <div class="v-info">
+        <div class="v-title">ТРОЛЛИНГ В ROBLOX НА 1 000 000 РОБУКСОВ!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 280 тыс. • 2 месяца назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 18 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 910</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 11 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nСЕКРЕТНЫЕ КОДЫ В ROBLOX...')">
+      <div class="v-thumb"><img src="img/video11.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v11"><div class="v-duration">09:40</div></div>
+      <div class="v-info">
+        <div class="v-title">СЕКРЕТНЫЕ КОДЫ В ROBLOX, КОТОРЫЕ ДАЮТ БЕСПЛАТНЫЕ РОБУКСЫ</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 520 тыс. • 2 месяца назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 41 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 2,5 тыс.</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 12 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nПОБЕГ ИЗ ТЮРЬМЫ...')">
+      <div class="v-thumb"><img src="img/video12.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v12"><div class="v-duration">16:18</div></div>
+      <div class="v-info">
+        <div class="v-title">ПОБЕГ ИЗ ТЮРЬМЫ В ROBLOX! (САМЫЙ СЛОЖНЫЙ ПОБЕГ)</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 150 тыс. • 2 месяца назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 8,8 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 450</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 13 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nЯ ПОСТРОИЛ ЦЕЛЫЙ ГОРОД...')">
+      <div class="v-thumb"><img src="img/video13.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v13"><div class="v-duration">25:00</div></div>
+      <div class="v-info">
+        <div class="v-title">Я ПОСТРОИЛ ЦЕЛЫЙ ГОРОД В ROBLOX ЗА 24 ЧАСА!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 95 тыс. • 3 месяца назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 5,2 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 280</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 14 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nСАМЫЙ БОЛЬШОЙ РОЗЫГРЫШ...')">
+      <div class="v-thumb"><img src="img/video14.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v14"><div class="v-duration">06:12</div></div>
+      <div class="v-info">
+        <div class="v-title">САМЫЙ БОЛЬШОЙ РОЗЫГРЫШ 100 000 РОБУКСОВ!</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 780 тыс. • 3 месяца назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 65 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 4,2 тыс.</span></div>
+      </div>
+    </div>
+    <!-- ВИДЕО 15 -->
+    <div class="video-item" onclick="alert('Открытие видео:\nЧТО БУДЕТ ЕСЛИ НЕ СПАТЬ...')">
+      <div class="v-thumb"><img src="img/video15.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>movie</span></div>';" alt="v15"><div class="v-duration">19:45</div></div>
+      <div class="v-info">
+        <div class="v-title">ЧТО БУДЕТ ЕСЛИ НЕ СПАТЬ 48 ЧАСОВ В ROBLOX?</div>
+        <div class="v-stats"><span class="material-symbols-outlined" style="font-size: 14px; margin-right: -4px;">visibility</span> 130 тыс. • 4 месяца назад</div>
+        <div class="v-actions"><span><span class="material-symbols-outlined">public</span></span> <span><span class="material-symbols-outlined">thumb_up</span> 7,5 тыс.</span> <span><span class="material-symbols-outlined">chat_bubble</span> 390</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- АНАЛИТИКА -->
+  <div id="analytics" class="page">
+    <div class="analytics-carousel" id="carousel">
+      <div class="analytics-card">
+        <div>
+          <div class="chart-title">Время просмотра (часы)</div>
+          <div class="chart-value">45 300 <span class="badge-down"><span class="material-symbols-outlined">trending_up</span> +12%</span></div>
+        </div>
+        <div>
+          <div class="chart-container">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#3ea6f6" stroke-width="2" points="0,90 10,85 20,80 30,50 40,60 50,10 60,40 70,20 80,5 90,10 100,0" vector-effect="non-scaling-stroke"/>
+            </svg>
+          </div>
+          <div class="chart-labels"><span>24 сент.</span><span>21 окт.</span></div>
+        </div>
+      </div>
+
+      <div class="analytics-card">
+        <div>
+          <div class="chart-title">Просмотры</div>
+          <div class="chart-value">854 200 <span class="badge-down"><span class="material-symbols-outlined">trending_up</span> +15%</span></div>
+        </div>
+        <div>
+          <div class="chart-container">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#3ea6f6" stroke-width="2" points="0,90 10,80 20,90 30,50 40,80 50,20 60,50 70,40 80,10 90,20 100,5" vector-effect="non-scaling-stroke"/>
+            </svg>
+          </div>
+          <div class="chart-labels"><span>24 сент.</span><span>21 окт.</span></div>
+        </div>
+      </div>
+
+      <div class="analytics-card">
+        <div>
+          <div class="chart-title">Подписчики</div>
+          <div class="chart-value">+12 450 <span class="badge-down"><span class="material-symbols-outlined">trending_up</span> +8%</span></div>
+        </div>
+        <div>
+          <div class="chart-container">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#3ea6f6" stroke-width="2" points="0,100 10,95 20,90 30,80 40,80 50,50 60,60 70,40 80,30 90,30 100,10" vector-effect="non-scaling-stroke"/>
+            </svg>
+          </div>
+          <div class="chart-labels"><span>24 сент.</span><span>21 окт.</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="carousel-dots" id="dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <div class="card" style="animation: fadeInUp 0.4s ease;">
+      <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Самый популярный контент</h3>
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Просмотры · Последние 28 дней</div>
+      
+      <div class="top-content-item">
+        <div class="top-content-thumb"><img src="img/top1.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>image</span></div>';" alt="t1"></div>
+        <div class="top-content-title">САМЫЙ БОЛЬШОЙ РОЗЫГРЫШ...</div>
+        <div class="top-content-views">780 тыс.</div>
+      </div>
+      <div class="top-content-item">
+        <div class="top-content-thumb"><img src="img/top2.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>image</span></div>';" alt="t2"></div>
+        <div class="top-content-title">СЕКРЕТНЫЕ КОДЫ В ROBLOX...</div>
+        <div class="top-content-views">520 тыс.</div>
+      </div>
+      <div class="top-content-item">
+        <div class="top-content-thumb"><img src="img/top3.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>image</span></div>';" alt="t3"></div>
+        <div class="top-content-title">Я СТАЛ АДМИНОМ В САМОМ...</div>
+        <div class="top-content-views">450 тыс.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- СООБЩЕСТВО -->
+  <div id="community" class="page">
+    <!-- ПОСТ 1 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar"><img src="img/avatar.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="a"></div>
+        <div class="post-meta">
+          <h4>VoltixRB</h4>
+          <p>2 часа назад</p>
+        </div>
+      </div>
+      <div class="post-content">Ребята, какое видео вам больше нравится? Скоро выйдет новое видео про секреты в ROBLOX! 🔥🎮</div>
+      <div class="post-image"><img src="img/post1.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>image</span></div>';" alt="p1"></div>
+      <div class="post-actions">
+        <span onclick="alert('Лайк поставлен!')"><span class="material-symbols-outlined">thumb_up</span> 1,8 тыс.</span>
+        <span onclick="alert('Комментарии к посту...')"><span class="material-symbols-outlined">chat_bubble</span> 94</span>
+      </div>
+    </div>
+
+    <!-- ПОСТ 2 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar"><img src="img/avatar.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="a"></div>
+        <div class="post-meta">
+          <h4>VoltixRB</h4>
+          <p>1 день назад</p>
+        </div>
+      </div>
+      <div class="post-content">Спасибо всем за 120 тысяч подписчиков! Вы лучшие! ❤️ Благодаря вам я подключил монетизацию!</div>
+      <div class="post-actions">
+        <span onclick="alert('Лайк поставлен!')"><span class="material-symbols-outlined">thumb_up</span> 5,4 тыс.</span>
+        <span onclick="alert('Комментарии к посту...')"><span class="material-symbols-outlined">chat_bubble</span> 380</span>
+      </div>
+    </div>
+
+    <!-- ПОСТ 3 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar"><img src="img/avatar.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="a"></div>
+        <div class="post-meta">
+          <h4>VoltixRB</h4>
+          <p>3 дня назад</p>
+        </div>
+      </div>
+      <div class="post-content">Кто играет в ROBLOX? Пишите свои ники в комменты, добавимся в друзья! 👇</div>
+      <div class="post-actions">
+        <span onclick="alert('Лайк поставлен!')"><span class="material-symbols-outlined">thumb_up</span> 1,2 тыс.</span>
+        <span onclick="alert('Комментарии к посту...')"><span class="material-symbols-outlined">chat_bubble</span> 150</span>
+      </div>
+    </div>
+    
+    <!-- ПОСТ 4 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar"><img src="img/avatar.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>person</span></div>';" alt="a"></div>
+        <div class="post-meta">
+          <h4>VoltixRB</h4>
+          <p>5 дней назад</p>
+        </div>
+      </div>
+      <div class="post-content">Скоро будет розыгрыш 10 000 РОБУКСОВ! Подпишись и поставь лайк, чтобы участвовать! 🎁</div>
+      <div class="post-image"><img src="img/post4.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'img-placeholder\'><span class=\'material-symbols-outlined\'>image</span></div>';" alt="p4"></div>
+      <div class="post-actions">
+        <span onclick="alert('Лайк поставлен!')"><span class="material-symbols-outlined">thumb_up</span> 3,2 тыс.</span>
+        <span onclick="alert('Комментарии к посту...')"><span class="material-symbols-outlined">chat_bubble</span> 210</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОНЕТИЗАЦИЯ -->
+  <div id="monetization" class="page">
+    <div class="monetization-header">
+      <div class="monetization-icon"><span class="material-symbols-outlined">check_circle</span></div>
+      <h2>Партнерская программа</h2>
+      <p>Канал соответствует требованиям</p>
+    </div>
+
+    <div class="card" style="text-align: center; background: linear-gradient(180deg, #ffffff 0%, #f1f8e9 100%);">
+      <div class="money-label">Общий доход за месяц</div>
+      <div class="money-big" id="monthlyRevenue">$1 245.50</div>
+      <div style="color: var(--green); font-weight: 500; font-size: 14px;" id="monthlyGrowth">+18% по сравнению с прошлым месяцем</div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Доход по месяцам</h3>
+      <div class="bar-chart" id="revenueChart">
+        <div class="bar-col" data-index="0" style="height: 40%;" onclick="selectMonth(0, this)"></div>
+        <div class="bar-col" data-index="1" style="height: 55%;" onclick="selectMonth(1, this)"></div>
+        <div class="bar-col" data-index="2" style="height: 70%;" onclick="selectMonth(2, this)"></div>
+        <div class="bar-col" data-index="3" style="height: 60%;" onclick="selectMonth(3, this)"></div>
+        <div class="bar-col" data-index="4" style="height: 85%;" onclick="selectMonth(4, this)"></div>
+        <div class="bar-col active" data-index="5" style="height: 100%;" onclick="selectMonth(5, this)"></div>
+      </div>
+      <div class="bar-labels">
+        <span>Май</span><span>Июн</span><span>Июл</span><span>Авг</span><span>Сен</span><span>Окт</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Статистика за <span id="selectedMonthName">Октябрь</span></h3>
+      <div class="detail-row"><span>RPM (доход на 1000 просмотров)</span><span id="rpmVal">$1.46</span></div>
+      <div class="detail-row"><span>CPM (стоимость 1000 показов)</span><span id="cpmVal">$3.50</span></div>
+      <div class="detail-row"><span>Воспроизведений с рекламой</span><span id="adPlaybackVal">68%</span></div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Детализация дохода</h3>
+      <div class="detail-row"><span>Реклама (AdSense)</span><span id="adsenseVal">$915.50</span></div>
+      <div class="detail-row"><span>YouTube Premium</span><span id="premiumVal">$230.00</span></div>
+      <div class="detail-row"><span>Спонсорство (Super Chat)</span><span id="superchatVal">$100.00</span></div>
+    </div>
+  </div>
+
+  <!-- Нижнее меню -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home', this)">
+      <div class="nav-icon"><span class="material-symbols-outlined fill-icon">dashboard</span></div><span>Главная</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('content', this)">
+      <div class="nav-icon"><span class="material-symbols-outlined">play_circle</span></div><span>Контент</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('analytics', this)">
+      <div class="nav-icon"><span class="material-symbols-outlined">bar_chart</span></div><span>Аналити...</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('community', this)">
+      <div class="nav-icon"><span class="material-symbols-outlined">group</span></div><span>Сообще...</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('monetization', this)">
+      <div class="nav-icon"><span class="material-symbols-outlined">attach_money</span></div><span>Монети...</span>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId, navElement) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      if (navElement) navElement.classList.add('active');
+    }
+
+    function toggleLike(el) {
+      if (el.classList.contains('liked')) {
+        el.classList.remove('liked');
+        let num = parseInt(el.innerText.replace(/[^\d]/g, ''));
+        el.innerHTML = '<span class="material-symbols-outlined">thumb_up</span> ' + (num - 1);
+      } else {
+        el.classList.add('liked');
+        let num = parseInt(el.innerText.replace(/[^\d]/g, ''));
+        el.innerHTML = '<span class="material-symbols-outlined">thumb_up</span> ' + (num + 1);
+      }
+    }
+    function toggleHeart(el) {
+      el.style.color = el.style.color === 'red' ? '' : 'red';
+    }
+
+    const carousel = document.getElementById('carousel');
+    const dots = document.querySelectorAll('#dots .dot');
+    if (carousel) {
+      carousel.addEventListener('scroll', () => {
+        const scrollLeft = carousel.scrollLeft;
+        const cardWidth = carousel.querySelector('.analytics-card').offsetWidth + 12;
+        const activeIndex = Math.round(scrollLeft / cardWidth);
+        dots.forEach((dot, index) => {
+          dot.classList.toggle('active', index === activeIndex);
+        });
+      });
+    }
+
+    const revenueData = [
+      { month: 'Май', rev: '$645.00', growth: '+5%', rpm: '$0.90', cpm: '$2.20', ads: '$480.00', prem: '$120.00', chat: '$45.00', adPlayback: '55%' },
+      { month: 'Июнь', rev: '$850.20', growth: '+10%', rpm: '$1.10', cpm: '$2.80', ads: '$620.20', prem: '$160.00', chat: '$70.00', adPlayback: '58%' },
+      { month: 'Июль', rev: '$1 120.50', growth: '+12%', rpm: '$1.25', cpm: '$3.10', ads: '$820.50', prem: '$200.00', chat: '$100.00', adPlayback: '62%' },
+      { month: 'Август', rev: '$980.00', growth: '-5%', rpm: '$1.15', cpm: '$2.90', ads: '$710.00', prem: '$180.00', chat: '$90.00', adPlayback: '60%' },
+      { month: 'Сентябрь', rev: '$1 350.80', growth: '+15%', rpm: '$1.35', cpm: '$3.30', ads: '$1000.80', prem: '$250.00', chat: '$100.00', adPlayback: '65%' },
+      { month: 'Октябрь', rev: '$1 245.50', growth: '+18%', rpm: '$1.46', cpm: '$3.50', ads: '$915.50', prem: '$230.00', chat: '$100.00', adPlayback: '68%' }
+    ];
+
+    function selectMonth(index, clickedBar) {
+      document.querySelectorAll('.bar-col').forEach(bar => bar.classList.remove('active'));
+      if (clickedBar) clickedBar.classList.add('active');
+      const data = revenueData[index];
+      document.getElementById('monthlyRevenue').innerText = data.rev;
+      document.getElementById('monthlyGrowth').innerText = data.growth + ' по сравнению с прошлым месяцем';
+      document.getElementById('selectedMonthName').innerText = data.month;
+      document.getElementById('rpmVal').innerText = data.rpm;
+      document.getElementById('cpmVal').innerText = data.cpm;
+      document.getElementById('adPlaybackVal').innerText = data.adPlayback;
+      document.getElementById('adsenseVal').innerText = data.ads;
+      document.getElementById('premiumVal').innerText = data.prem;
+      document.getElementById('superchatVal').innerText = data.chat;
+    }
+  </script>
+</body>
+</html>
